@@ -6,8 +6,10 @@ import com.example.photogallerysample.viewmodel.GalleryViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
+import org.koin.android.ext.koin.androidContext
+
 val dataModule = module {
-    single<PhotoRepository> { PhotoRepositoryImpl() }
+    single<PhotoRepository> { PhotoRepositoryImpl(androidContext()) }
 }
 
 val uiModule = module {
