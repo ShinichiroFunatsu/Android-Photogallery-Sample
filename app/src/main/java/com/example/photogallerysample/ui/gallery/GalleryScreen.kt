@@ -66,7 +66,7 @@ private const val ARG_BUCKET_ID = "bucketId"
 
 @Composable
 fun GalleryScreen(
-    onNavigateToViewer: () -> Unit,
+    onNavigateToViewer: (String, Int) -> Unit,
     viewModel: GalleryViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -129,7 +129,7 @@ fun GalleryScreen(
 @Composable
 fun GalleryShell(
     albums: List<Album>,
-    onNavigateToViewer: () -> Unit,
+    onNavigateToViewer: (String, Int) -> Unit,
     viewModel: GalleryViewModel
 ) {
     val navController = rememberNavController()
@@ -201,9 +201,9 @@ fun GalleryShell(
                     is PhotosUiState.Success -> {
                         PhotosGridScreen(
                             photos = pState.photos,
-                            onPhotoClick = { 
+                            onPhotoClick = { index ->
                                 // Call onNavigateToViewer (Screen3 task)
-                                onNavigateToViewer() 
+                                onNavigateToViewer(bucketId, index)
                             },
                         )
                     }

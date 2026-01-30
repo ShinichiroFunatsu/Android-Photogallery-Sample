@@ -22,7 +22,7 @@ import com.example.photogallerysample.data.Photo
 @Composable
 fun PhotosGridScreen(
     photos: List<Photo>,
-    onPhotoClick: (Photo) -> Unit,
+    onPhotoClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     errorMessage: String? = null
@@ -39,10 +39,11 @@ fun PhotosGridScreen(
                 columns = GridCells.Adaptive(minSize = 120.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(photos) { photo ->
+                items(photos.size) { index ->
+                    val photo = photos[index]
                     PhotoGridItem(
                         photo = photo,
-                        onClick = { onPhotoClick(photo) }
+                        onClick = { onPhotoClick(index) }
                     )
                 }
             }
