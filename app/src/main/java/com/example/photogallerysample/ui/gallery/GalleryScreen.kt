@@ -60,9 +60,9 @@ import com.example.photogallerysample.viewmodel.GalleryViewModel
 import com.example.photogallerysample.viewmodel.PhotosUiState
 import org.koin.androidx.compose.koinViewModel
 
-private const val ROUTE_ALBUM_LIST = "album_list"
-private const val ROUTE_PHOTOS_GRID = "photos_grid"
-private const val ARG_BUCKET_ID = "bucketId"
+import androidx.navigation.toRoute
+import com.example.photogallerysample.navigation.AlbumListRoute
+import com.example.photogallerysample.navigation.PhotosGridRoute
 
 @Composable
 fun GalleryScreen(
@@ -159,11 +159,10 @@ fun GalleryShell(
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = ROUTE_ALBUM_LIST,
+            startDestination = AlbumListRoute,
             modifier = Modifier.padding(paddingValues)
         ) {
-            composable(
-                route = ROUTE_ALBUM_LIST,
+            composable<AlbumListRoute>(
                 enterTransition = {
                     slideInHorizontally(initialOffsetX = { -it }) + fadeIn()
                 },
@@ -174,14 +173,12 @@ fun GalleryShell(
                 AlbumList(
                     albums = albums,
                     onAlbumClick = { bucketId ->
-                        navController.navigate("$ROUTE_PHOTOS_GRID/$bucketId")
+                        navController.navigate(PhotosGridRoute(bucketId))
                     }
                 )
             }
 
-            composable(
-                route = "$ROUTE_PHOTOS_GRID/{$ARG_BUCKET_ID}",
-                arguments = listOf(navArgument(ARG_BUCKET_ID) { type = NavType.StringType }),
+            composable<PhotosGridRoute>(
                 enterTransition = {
                     slideInHorizontally(initialOffsetX = { it }) + fadeIn()
                 },
@@ -189,7 +186,8 @@ fun GalleryShell(
                     slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
                 }
             ) { backStackEntry ->
-                val bucketId = backStackEntry.arguments?.getString(ARG_BUCKET_ID) ?: return@composable
+                val route = backStackEntry.toRoute<PhotosGridRoute>()
+                val bucketId = route.bucketId
                 
                 LaunchedEffect(bucketId) {
                     viewModel.loadPhotos(bucketId)

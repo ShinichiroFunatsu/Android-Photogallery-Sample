@@ -4,11 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.navigation.toRoute
+import com.example.photogallerysample.navigation.GalleryRoute
+import com.example.photogallerysample.navigation.ViewerRoute
 import com.example.photogallerysample.ui.gallery.GalleryScreen
 import com.example.photogallerysample.ui.theme.PhotoGallerySampleTheme
 import com.example.photogallerysample.ui.viewer.ViewerScreen
@@ -24,25 +25,20 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = "gallery_root"
+                    startDestination = GalleryRoute
                 ) {
-                    composable("gallery_root") {
+                    composable<GalleryRoute> {
                          GalleryScreen(
                              onNavigateToViewer = { bucketId, index ->
-                                 navController.navigate("viewer_route/$bucketId/$index")
+                                 navController.navigate(ViewerRoute(bucketId, index))
                              }
                          )
                     }
                     
-                    composable(
-                        route = "viewer_route/{bucketId}/{initialIndex}",
-                        arguments = listOf(
-                             navArgument("bucketId") { type = NavType.StringType },
-                             navArgument("initialIndex") { type = NavType.IntType }
-                        )
-                    ) { backStackEntry ->
-                        val bucketId = backStackEntry.arguments?.getString("bucketId") ?: return@composable
-                        val initialIndex = backStackEntry.arguments?.getInt("initialIndex") ?: 0
+                    composable<ViewerRoute> { backStackEntry ->
+                        val route = backStackEntry.toRoute<ViewerRoute>()
+                        val bucketId = route.bucketId
+                        val initialIndex = route.initialIndex
                         
                         // Explicitly get viewModel to ensure Composable context logic is clear
                         val viewModel: GalleryViewModel = koinViewModel()
