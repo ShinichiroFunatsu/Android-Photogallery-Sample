@@ -6,20 +6,29 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-data class GalleryUiState(
-    val albums: List<String> = emptyList(),
-    val isLoading: Boolean = false
-)
+sealed interface GalleryUiState {
+    object Initial : GalleryUiState
+    object NoPermission : GalleryUiState
+    object Empty : GalleryUiState
+    data class Content(val albums: List<String>) : GalleryUiState
+    data class Error(val message: String) : GalleryUiState
+}
 
 class GalleryViewModel(
     private val repository: PhotoRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(GalleryUiState())
+    private val _uiState = MutableStateFlow<GalleryUiState>(GalleryUiState.Initial)
     val uiState: StateFlow<GalleryUiState> = _uiState.asStateFlow()
 
-    init {
-        // Dummy initialization to confirm ViewModel is working
-        _uiState.value = GalleryUiState(albums = listOf("Initialized from ViewModel"))
+    fun onPermissionGranted() {
+        // Dummy load for now
+        _uiState.value = GalleryUiState.Content(listOf("Album A", "Album B"))
+        // To test Empty state:
+        // _uiState.value = GalleryUiState.Empty
+    }
+
+    fun onPermissionDenied() {
+        _uiState.value = GalleryUiState.NoPermission
     }
 }
