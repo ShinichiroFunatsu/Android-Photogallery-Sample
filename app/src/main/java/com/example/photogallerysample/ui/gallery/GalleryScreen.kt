@@ -5,6 +5,13 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,10 +25,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,14 +46,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.example.photogallerysample.data.Album
 import com.example.photogallerysample.viewmodel.GalleryUiState
-import com.example.photogallerysample.viewmodel.GalleryUiState.Content
 import com.example.photogallerysample.viewmodel.GalleryViewModel
+import com.example.photogallerysample.viewmodel.PhotosUiState
 import org.koin.androidx.compose.koinViewModel
+
+private const val ROUTE_ALBUM_LIST = "album_list"
+private const val ROUTE_PHOTOS_GRID = "photos_grid"
+private const val ARG_BUCKET_ID = "bucketId"
 
 @Composable
 fun GalleryScreen(
@@ -72,15 +92,6 @@ fun GalleryScreen(
         if (ContextCompat.checkSelfPermission(context, permissionName) == PackageManager.PERMISSION_GRANTED) {
             viewModel.onPermissionGranted()
         } else {
-            // First time check, if not granted, we set state to NoPermission so user can click button
-            // Or we could auto-request? requirements say "Initial request after initialization once".
-            // "Sampleなので「初期化後に一発だけ」権限リクエストすれば良い"
-            // "設定画面への導線や管理画面などは不要"
-            // Let's assume we don't auto-request immediately on start to avoid bad UX, 
-            // but the spec says "初期化後に一発だけ", maybe it means "Just request it".
-            // However, typical pattern is to show UI if not granted. 
-            // The instruction says: "Empty画面コンポーネントを実装し...権限なし: 説明 + 許可ボタン"
-            // So we should show that state.
             viewModel.onPermissionDenied()
         }
     }
@@ -105,14 +116,107 @@ fun GalleryScreen(
                 EmptyContent(message = "Error: ${state.message}")
             }
             is GalleryUiState.Content -> {
-                AlbumList(
+                GalleryShell(
                     albums = state.albums,
+                    onNavigateToViewer = onNavigateToViewer,
+                    viewModel = viewModel
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun GalleryShell(
+    albums: List<Album>,
+    onNavigateToViewer: () -> Unit,
+    viewModel: GalleryViewModel
+) {
+    val navController = rememberNavController()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Photo Gallery") },
+                backgroundColor = MaterialTheme.colors.primary
+            )
+        },
+        bottomBar = {
+            // Placeholder BottomBar
+            BottomNavigation {
+                // Fixed dummy items
+                BottomNavigationItem(
+                    selected = true,
+                    onClick = {},
+                    icon = {
+                        // Dummy icon
+                        Text("A")
+                    },
+                    label = { Text("Albums") }
+                )
+            }
+        }
+    ) { paddingValues ->
+        NavHost(
+            navController = navController,
+            startDestination = ROUTE_ALBUM_LIST,
+            modifier = Modifier.padding(paddingValues)
+        ) {
+            composable(
+                route = ROUTE_ALBUM_LIST,
+                enterTransition = {
+                    slideInHorizontally(initialOffsetX = { -it }) + fadeIn()
+                },
+                exitTransition = {
+                    slideOutHorizontally(targetOffsetX = { -it }) + fadeOut()
+                }
+            ) {
+                AlbumList(
+                    albums = albums,
                     onAlbumClick = { bucketId ->
-                        // Just a callback for now as per requirements, strictly no navigation logic implementation here
-                        // but normally we would navigate.
-                        // "このタスクでは遷移はしない。クリック時にコールバックが呼ばれるだけでよい。"
+                        navController.navigate("$ROUTE_PHOTOS_GRID/$bucketId")
                     }
                 )
+            }
+
+            composable(
+                route = "$ROUTE_PHOTOS_GRID/{$ARG_BUCKET_ID}",
+                arguments = listOf(navArgument(ARG_BUCKET_ID) { type = NavType.StringType }),
+                enterTransition = {
+                    slideInHorizontally(initialOffsetX = { it }) + fadeIn()
+                },
+                exitTransition = {
+                    slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
+                }
+            ) { backStackEntry ->
+                val bucketId = backStackEntry.arguments?.getString(ARG_BUCKET_ID) ?: return@composable
+                
+                LaunchedEffect(bucketId) {
+                    viewModel.loadPhotos(bucketId)
+                }
+
+                val photosState by viewModel.photosUiState.collectAsState()
+                
+                when(val pState = photosState) {
+                    is PhotosUiState.Success -> {
+                        PhotosGridScreen(
+                            photos = pState.photos,
+                            onPhotoClick = { 
+                                // Call onNavigateToViewer (Screen3 task)
+                                onNavigateToViewer() 
+                            },
+                        )
+                    }
+                    PhotosUiState.Loading -> {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                    is PhotosUiState.Error -> {
+                         EmptyContent(message = "Error: ${pState.message}")
+                    }
+                    else -> {}
+                }
             }
         }
     }
@@ -210,3 +314,4 @@ internal fun EmptyContent(message: String) {
         )
     }
 }
+
