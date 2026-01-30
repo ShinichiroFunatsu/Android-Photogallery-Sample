@@ -1,15 +1,43 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+# --- OS ---
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+Thumbs.db
+
+# --- Android Studio / IntelliJ ---
+*.iml
+.idea/
+!.idea/codeStyles/
+!.idea/runConfigurations/
+
+# --- Gradle ---
+.gradle/
+**/build/
+
+# --- Local SDK path / secrets ---
 local.properties
+**/local.properties
+secrets.properties
+**/secrets.properties
+
+# --- External native build / CMake ---
+.externalNativeBuild/
+.cxx/
+
+# --- Captures ---
+captures/
+
+# --- Logs / temporary ---
+*.log
+*.hprof
+
+# --- Output artifacts (optional: keep if you intentionally commit them) ---
+*.apk
+*.ap_
+*.aab
+
+# --- Keystore (NEVER commit real keys) ---
+*.jks
+*.keystore
+*.p12
+
+# --- Kotlin / tooling caches (rare but harmless) ---
+.kotlin/
