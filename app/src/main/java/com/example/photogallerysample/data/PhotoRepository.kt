@@ -9,7 +9,9 @@ import kotlinx.coroutines.withContext
 
 interface PhotoRepository {
     suspend fun getAlbums(): List<Album>
+    suspend fun getPhotos(bucketId: String): List<Photo>
 }
+
 
 class PhotoRepositoryImpl(
     private val context: Context
@@ -80,6 +82,59 @@ class PhotoRepositoryImpl(
                 coverDate = it.coverDate
             )
         }.sortedByDescending { it.coverDate }
+    }
+
+    override suspend fun getPhotos(bucketId: String): List<Photo> = withContext(Dispatchers.IO) {
+        val photos = mutableListOf<Photo>()
+
+        val projection = arrayOf(
+            MediaStore.Images.Media._ID,
+            MediaStore.Images.Media.DATE_TAKEN,
+            MediaStore.Images.Media.DATE_ADDED,
+            MediaStore.Images.Media.MIME_TYPE
+        )
+
+        val selection = "${MediaStore.Images.Media.BUCKET_ID} = ?"
+        val selectionArgs = arrayOf(bucketId)
+        val sortOrder = "${MediaStore.Images.Media.DATE_TAKEN} DESC"
+
+        context.contentResolver.query(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            projection,
+            selection,
+            selectionArgs,
+            sortOrder
+        )?.use { cursor ->
+            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+            val dateTakenColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_TAKEN)
+            val dateAddedColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED)
+            val mimeTypeColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.MIME_TYPE)
+
+            while (cursor.moveToNext()) {
+                val id = cursor.getLong(idColumn)
+                val dateTaken = cursor.getLong(dateTakenColumn)
+                val dateAdded = cursor.getLong(dateAddedColumn)
+                val mimeType = cursor.getString(mimeTypeColumn)
+
+                val timestamp = if (dateTaken > 0) {
+                    dateTaken
+                } else {
+                    dateAdded * 1000
+                }
+
+                val uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
+
+                photos.add(
+                    Photo(
+                        id = id,
+                        contentUri = uri,
+                        date = timestamp,
+                        mimeType = mimeType
+                    )
+                )
+            }
+        }
+        return@withContext photos
     }
 
     private fun clientFallbackName(bucketId: String): String {
