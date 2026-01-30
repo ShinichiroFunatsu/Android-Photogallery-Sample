@@ -1,8 +1,5 @@
 package com.example.photogallerysample.ui.viewer
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,7 +15,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,9 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
+
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.photogallerysample.ui.gallery.EmptyContent
@@ -49,27 +43,6 @@ fun ViewerScreen(
     onBack: () -> Unit,
     viewModel: GalleryViewModel = koinViewModel()
 ) {
-    val context = LocalContext.current
-    val window = context.findActivity()?.window
-
-    // Immersive Mode
-    DisposableEffect(Unit) {
-        if (window != null) {
-            val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-            
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-            insetsController.hide(WindowInsetsCompat.Type.systemBars())
-            insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            
-            onDispose {
-                WindowCompat.setDecorFitsSystemWindows(window, true)
-                insetsController.show(WindowInsetsCompat.Type.systemBars())
-            }
-        } else {
-             onDispose { }
-        }
-    }
-
     LaunchedEffect(bucketId) {
         viewModel.loadPhotos(bucketId)
     }
@@ -141,13 +114,4 @@ fun ViewerScreen(
                 .padding(8.dp) // Inner padding
         )
     }
-}
-
-private fun Context.findActivity(): Activity? {
-    var context = this
-    while (context is ContextWrapper) {
-        if (context is Activity) return context
-        context = context.baseContext
-    }
-    return null
 }
