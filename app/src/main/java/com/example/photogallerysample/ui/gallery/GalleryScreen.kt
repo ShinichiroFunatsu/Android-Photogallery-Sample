@@ -61,8 +61,7 @@ import androidx.navigation.toRoute
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.photogallerysample.data.Album
-import com.example.photogallerysample.navigation.AlbumListRoute
-import com.example.photogallerysample.navigation.PhotosGridRoute
+import com.example.photogallerysample.navigation.Routes
 import com.example.photogallerysample.viewmodel.GalleryUiState
 import com.example.photogallerysample.viewmodel.GalleryViewModel
 import com.example.photogallerysample.viewmodel.PhotosUiState
@@ -183,12 +182,12 @@ fun GalleryShell(
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = AlbumListRoute,
+            startDestination = Routes.Gallery.AlbumList,
             modifier = Modifier
                 .padding(paddingValues)
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
         ) {
-            composable<AlbumListRoute>(
+            composable<Routes.Gallery.AlbumList>(
                 enterTransition = {
                     slideInHorizontally(initialOffsetX = { -it }) + fadeIn()
                 },
@@ -199,12 +198,12 @@ fun GalleryShell(
                 AlbumList(
                     albums = albums,
                     onAlbumClick = { bucketId ->
-                        navController.navigate(PhotosGridRoute(bucketId))
+                        navController.navigate(Routes.Gallery.PhotosGrid(bucketId))
                     }
                 )
             }
 
-            composable<PhotosGridRoute>(
+            composable<Routes.Gallery.PhotosGrid>(
                 enterTransition = {
                     slideInHorizontally(initialOffsetX = { it }) + fadeIn()
                 },
@@ -212,7 +211,7 @@ fun GalleryShell(
                     slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
                 }
             ) { backStackEntry ->
-                val route = backStackEntry.toRoute<PhotosGridRoute>()
+                val route = backStackEntry.toRoute<Routes.Gallery.PhotosGrid>()
                 val bucketId = route.bucketId
                 
                 LaunchedEffect(bucketId) {
