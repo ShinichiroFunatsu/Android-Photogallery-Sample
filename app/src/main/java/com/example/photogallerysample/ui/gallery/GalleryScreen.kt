@@ -196,7 +196,7 @@ private fun NoPermissionContent(
 }
 
 @Composable
-private fun EmptyContent(message: String) {
+internal fun EmptyContent(message: String) {
     Box(
         modifier = Modifier
             .fillMaxSize()
