@@ -3,8 +3,8 @@ package com.example.photogallerysample.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.photogallerysample.data.Album
-import com.example.photogallerysample.data.PhotoRepository
 import com.example.photogallerysample.data.Photo
+import com.example.photogallerysample.data.PhotoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
