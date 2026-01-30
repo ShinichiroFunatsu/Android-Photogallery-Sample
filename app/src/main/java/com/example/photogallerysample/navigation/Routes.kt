@@ -6,4 +6,16 @@ import kotlinx.serialization.Serializable
 object GalleryRoute
 
 @Serializable
-object ViewerRoute
+data class ViewerRoute(
+    val bucketId: String,
+    val initialIndex: Int
+)
+
+// Inner routes for GalleryShell
+@Serializable
+object AlbumListRoute
+
+@Serializable
+data class PhotosGridRoute(
+    val bucketId: String
+)
