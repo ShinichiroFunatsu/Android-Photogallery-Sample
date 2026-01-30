@@ -3,6 +3,11 @@
 このリポジトリで作業するコーディングエージェント向けの運用ルールです。  
 仕様の唯一の正は `docs/spec.md` です。
 
+## 関連ドキュメント
+- [docs/spec.md](docs/spec.md): 仕様（What）
+- [docs/decisions.md](docs/decisions.md): 重要な判断理由（Why）
+- [docs/architecture.md](docs/architecture.md): 構造/責務（Howの骨格）
+
 ---
 
 ## 1. 仕様の扱い（必須）
