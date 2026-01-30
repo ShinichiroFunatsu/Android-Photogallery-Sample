@@ -3,27 +3,27 @@ package com.example.photogallerysample.navigation
 import kotlinx.serialization.Serializable
 
 /**
- * Type-safe route definitions for the app.
- * The hierarchy is explicitly defined using nested types.
+ * アプリ内の型安全なルート定義。
+ * 階層構造はネストされた型を使用して明示的に定義されています。
  */
 sealed interface Routes {
 
     /**
-     * Parent route for the gallery feature.
-     * Contains inner routes for album listing and photo grid.
+     * ギャラリー機能の親ルート。
+     * アルバム一覧と写真グリッドの内部ルートを含みます。
      */
     @Serializable
     object Gallery : Routes {
 
         /**
-         * Route for displaying the list of albums.
+         * アルバム一覧を表示するルート。
          */
         @Serializable
         object AlbumList
 
         /**
-         * Route for displaying photos within a specific album.
-         * @param bucketId The ID of the album (bucket) to display.
+         * 特定のアルバム内の写真を表示するルート。
+         * @param bucketId 表示するアルバム（バケット）のID。
          */
         @Serializable
         data class PhotosGrid(
@@ -32,9 +32,9 @@ sealed interface Routes {
     }
 
     /**
-     * Independent route for the full-screen photo viewer.
-     * @param bucketId The ID of the album being viewed.
-     * @param initialIndex The index of the photo to show initially.
+     * フルスクリーンの写真ビューアーを表示する独立したルート。
+     * @param bucketId 閲覧中のアルバムのID。
+     * @param initialIndex 最初に表示する写真のインデックス。
      */
     @Serializable
     data class Viewer(
