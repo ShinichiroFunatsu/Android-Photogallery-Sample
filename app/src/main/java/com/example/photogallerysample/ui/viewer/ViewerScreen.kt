@@ -1,16 +1,15 @@
 package com.example.photogallerysample.ui.viewer
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.CircularProgressIndicator
@@ -18,7 +17,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,9 +27,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.photogallerysample.ui.gallery.EmptyContent
@@ -46,27 +41,6 @@ fun ViewerScreen(
     onBack: () -> Unit,
     viewModel: GalleryViewModel = koinViewModel()
 ) {
-    val context = LocalContext.current
-    val window = context.findActivity()?.window
-
-    // Immersive Mode
-    DisposableEffect(Unit) {
-        if (window != null) {
-            val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-            
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-            insetsController.hide(WindowInsetsCompat.Type.systemBars())
-            insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            
-            onDispose {
-                WindowCompat.setDecorFitsSystemWindows(window, true)
-                insetsController.show(WindowInsetsCompat.Type.systemBars())
-            }
-        } else {
-             onDispose { }
-        }
-    }
-
     LaunchedEffect(bucketId) {
         viewModel.loadPhotos(bucketId)
     }
@@ -130,23 +104,12 @@ fun ViewerScreen(
             contentDescription = "Close",
             tint = Color.White,
             modifier = Modifier
+                .align(Alignment.TopEnd)
+                .windowInsetsPadding(WindowInsets.safeDrawing)
                 .padding(16.dp)
                 .size(48.dp) // Larger touch target
-                .align(Alignment.TopEnd)
                 .clickable(onClick = onBack)
                 .padding(8.dp) // Inner padding
-                .systemBarsPadding() // Ensure it's reachable if bars swipe in? Actually we hide bars. But let's add padding just in case.
-                             // Actually immersive mode with decorFitsSystemWindows(false) means 0,0 is top-left of SCREEN.
-                             // So padding 16dp is fine.
         )
     }
-}
-
-private fun Context.findActivity(): Activity? {
-    var context = this
-    while (context is ContextWrapper) {
-        if (context is Activity) return context
-        context = context.baseContext
-    }
-    return null
 }
