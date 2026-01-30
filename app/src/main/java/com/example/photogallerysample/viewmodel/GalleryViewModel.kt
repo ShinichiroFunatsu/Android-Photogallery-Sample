@@ -1,16 +1,19 @@
 package com.example.photogallerysample.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.photogallerysample.data.Album
 import com.example.photogallerysample.data.PhotoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 sealed interface GalleryUiState {
     object Initial : GalleryUiState
     object NoPermission : GalleryUiState
     object Empty : GalleryUiState
-    data class Content(val albums: List<String>) : GalleryUiState
+    data class Content(val albums: List<Album>) : GalleryUiState
     data class Error(val message: String) : GalleryUiState
 }
 
@@ -22,10 +25,18 @@ class GalleryViewModel(
     val uiState: StateFlow<GalleryUiState> = _uiState.asStateFlow()
 
     fun onPermissionGranted() {
-        // Dummy load for now
-        _uiState.value = GalleryUiState.Content(listOf("Album A", "Album B"))
-        // To test Empty state:
-        // _uiState.value = GalleryUiState.Empty
+        viewModelScope.launch {
+            try {
+                val albums = repository.getAlbums()
+                if (albums.isEmpty()) {
+                    _uiState.value = GalleryUiState.Empty
+                } else {
+                    _uiState.value = GalleryUiState.Content(albums)
+                }
+            } catch (e: Exception) {
+                _uiState.value = GalleryUiState.Error(e.message ?: "Unknown error")
+            }
+        }
     }
 
     fun onPermissionDenied() {
