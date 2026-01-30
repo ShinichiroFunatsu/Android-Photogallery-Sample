@@ -133,14 +133,12 @@ fun ViewerScreen(
             contentDescription = "Close",
             tint = Color.White,
             modifier = Modifier
+                .align(Alignment.TopEnd)
+                .windowInsetsPadding(WindowInsets.safeDrawing)
                 .padding(16.dp)
                 .size(48.dp) // Larger touch target
-                .align(Alignment.TopEnd)
                 .clickable(onClick = onBack)
                 .padding(8.dp) // Inner padding
-                .windowInsetsPadding(WindowInsets.safeDrawing)
-                             // Actually immersive mode with decorFitsSystemWindows(false) means 0,0 is top-left of SCREEN.
-                             // So padding 16dp is fine.
         )
     }
 }
