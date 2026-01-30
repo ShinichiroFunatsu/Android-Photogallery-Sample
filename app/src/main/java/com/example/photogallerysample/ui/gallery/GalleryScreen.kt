@@ -63,6 +63,18 @@ import org.koin.androidx.compose.koinViewModel
 import androidx.navigation.toRoute
 import com.example.photogallerysample.navigation.AlbumListRoute
 import com.example.photogallerysample.navigation.PhotosGridRoute
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.material.Surface
+import androidx.compose.material.primarySurface
 
 @Composable
 fun GalleryScreen(
@@ -126,6 +138,7 @@ fun GalleryScreen(
     }
 }
 
+
 @Composable
 fun GalleryShell(
     albums: List<Album>,
@@ -136,31 +149,52 @@ fun GalleryShell(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Photo Gallery") },
-                backgroundColor = MaterialTheme.colors.primary
-            )
+            Surface(
+                color = MaterialTheme.colors.primary,
+                elevation = 4.dp
+            ) {
+                Column {
+                    Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
+                    TopAppBar(
+                        title = { Text("Photo Gallery") },
+                        backgroundColor = Color.Transparent,
+                        elevation = 0.dp
+                    )
+                }
+            }
         },
         bottomBar = {
-            // Placeholder BottomBar
-            BottomNavigation {
-                // Fixed dummy items
-                BottomNavigationItem(
-                    selected = true,
-                    onClick = {},
-                    icon = {
-                        // Dummy icon
-                        Text("A")
-                    },
-                    label = { Text("Albums") }
-                )
+            Surface(
+                color = MaterialTheme.colors.primarySurface,
+                elevation = 8.dp
+            ) {
+                Column {
+                    BottomNavigation(
+                        backgroundColor = Color.Transparent,
+                        elevation = 0.dp
+                    ) {
+                        // Fixed dummy items
+                        BottomNavigationItem(
+                            selected = true,
+                            onClick = {},
+                            icon = {
+                                // Dummy icon
+                                Text("A")
+                            },
+                            label = { Text("Albums") }
+                        )
+                    }
+                    Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+                }
             }
         }
     ) { paddingValues ->
         NavHost(
             navController = navController,
             startDestination = AlbumListRoute,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier
+                .padding(paddingValues)
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
         ) {
             composable<AlbumListRoute>(
                 enterTransition = {

@@ -38,6 +38,9 @@ import com.example.photogallerysample.ui.gallery.EmptyContent
 import com.example.photogallerysample.viewmodel.GalleryViewModel
 import com.example.photogallerysample.viewmodel.PhotosUiState
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 
 @Composable
 fun ViewerScreen(
@@ -135,7 +138,7 @@ fun ViewerScreen(
                 .align(Alignment.TopEnd)
                 .clickable(onClick = onBack)
                 .padding(8.dp) // Inner padding
-                .systemBarsPadding() // Ensure it's reachable if bars swipe in? Actually we hide bars. But let's add padding just in case.
+                .windowInsetsPadding(WindowInsets.safeDrawing)
                              // Actually immersive mode with decorFitsSystemWindows(false) means 0,0 is top-left of SCREEN.
                              // So padding 16dp is fine.
         )
